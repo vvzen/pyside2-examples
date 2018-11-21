@@ -2,6 +2,7 @@ from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtg
 import qdarkstyle
 
+# A simple Panel class with some basic widgets
 
 class Panel(qtw.QWidget):
     def __init__(self):
@@ -18,8 +19,9 @@ class Panel(qtw.QWidget):
         self.checkbox = qtw.QCheckBox('agree to GDPR')
         self.checkbox.setChecked(True)
 
+        # A QCompleter helps users by giving autocompletion
         self.user_line = qtw.QLineEdit()
-        self.users = ['valerio', 'edoardo', 'gaia', 'rami']
+        self.users = ['harry', 'hermione', 'ron', 'hagrid']
         self.completer_line = qtw.QCompleter(self.users)
         self.user_line.setCompleter(self.completer_line)
         self.user_line.setPlaceholderText('enter you name here..')

@@ -1,3 +1,5 @@
+import sys
+
 from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtg
 from PySide2 import QtCore as qtc
@@ -72,7 +74,11 @@ class MyTableWidget(qtw.QTableWidget):
         }
 
 
-app = qtw.QApplication()
-table = MyTableWidget()
-table.show()
-app.exec_()
+def main():
+    app = qtw.QApplication(sys.argv)
+    table = MyTableWidget()
+    table.show()
+    app.exec_()
+
+if __name__ == '__main__':
+    main()

@@ -1,6 +1,8 @@
 # PySide2 examples & templates
 
-This repo contains a series of examples that show how to implement basic widgets in PySide2.
+This repo contains a series of very basic examples that show how to implement simple widgets in PySide2.
+
+I'm trying to gather some more complex examples that show how to deal with Views and Models as well.
 
 I come here from time to time just to copy paste some boilerplate code before starting a new GUI, especially if it has been a while. 😁
 

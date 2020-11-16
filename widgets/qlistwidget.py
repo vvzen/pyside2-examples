@@ -1,6 +1,10 @@
+import os
+import sys
+
 from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtg
 
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Panel(qtw.QWidget):
     def __init__(self):
@@ -12,7 +16,7 @@ class Panel(qtw.QWidget):
         for i, shot in enumerate(shots):
             item = qtw.QListWidgetItem(shot)
             item.setToolTip('shot {}'.format(i))
-            item.setIcon(qtg.QIcon('shot.png'))
+            item.setIcon(qtg.QIcon(os.path.join(CURRENT_DIR, 'shot.png')))
 
             item.setBackgroundColor(qtg.QColor(152, 106, 232))
             list_widget.addItem(item)
@@ -27,7 +31,11 @@ class Panel(qtw.QWidget):
         self.setLayout(master_layour)
 
 
-app = qtw.QApplication()
-panel = Panel()
-panel.show()
-app.exec_()
+def main():
+    app = qtw.QApplication(sys.argv)
+    panel = Panel()
+    panel.show()
+    app.exec_()
+
+if __name__ == '__main__':
+    main()

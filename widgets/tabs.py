@@ -1,3 +1,5 @@
+import sys
+
 from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtg
 
@@ -40,9 +42,11 @@ class Panel(qtw.QWidget):
         master_layout.addWidget(table)
         self.setLayout(master_layout)
 
+def main():
+    app = qtw.QApplication(sys.argv)
+    panel = Panel()
+    panel.show()
+    app.exec_()
 
-app = qtw.QApplication()
-
-panel = Panel()
-panel.show()
-app.exec_()
+if __name__ == "__main__":
+    main()

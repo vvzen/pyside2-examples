@@ -1,3 +1,5 @@
+import sys
+
 from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtg
 
@@ -51,7 +53,11 @@ class Panel(qtw.QWidget):
         print 'checkbox {}, {} sent a signal'.format(sender, sender.text())
 
 
-app = qtw.QApplication()
-panel = Panel()
-panel.show()
-app.exec_()
+def main():
+    app = qtw.QApplication(sys.argv)
+    panel = Panel()
+    panel.show()
+    app.exec_()
+
+if __name__ == '__main__':
+    main()

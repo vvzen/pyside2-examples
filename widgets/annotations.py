@@ -1,12 +1,15 @@
-"""More complex example showing a possible annotation tool
+"""Slightly more involved example showing a possible annotation tool
+using 2 overlapping QGraphicsView widgets
 """
 
+import os
 import sys
 
 import PySide2.QtCore as qtc
 import PySide2.QtWidgets as qtw
 import PySide2.QtGui as qtg
 
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class ScribbleWidget(qtw.QWidget):
     def __init__(self, parent=None):
@@ -139,149 +142,67 @@ class MainWindow(qtw.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.saveAsActs = []
+        self.window = qtw.QWidget()
 
-        self.scribble_widget = ScribbleWidget()
-        self.setCentralWidget(self.scribble_widget)
+        self.scribble_scene = qtw.QGraphicsScene(self)
+        self.text_scene = qtw.QGraphicsScene(self)
+        self.scribble_view = qtw.QGraphicsView(self.scribble_scene, parent=self.window)
+        self.text_view = qtw.QGraphicsView(self.text_scene, parent=self.window)
+        self.text_view.setStyleSheet("background: transparent")
 
-        self.createActions()
-        self.createMenus()
+        # self.scribble_widget = ScribbleWidget()
 
-        self.setWindowTitle("Scribble")
+        self.setWindowTitle("Annotate")
         self.resize(500, 500)
 
-    def keyPressEvent(self, event):
-        self.scribble_widget.current_text += event.text()
-        print 'self.current_text: %s' % self.scribble_widget.current_text
-        # self.scribble_widget.draw_text()
+        self.test_views()
 
+        self.main_layout = qtw.QVBoxLayout()
+
+        # self.main_layout.addWidget(self.scribble_widget)
+
+        # self.spacer = qtw.QSpacerItem(20, 40, qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Expanding)
+        # self.main_layout.addSpacerItem(self.spacer)
+
+        self.scribble_widget = qtw.QWidget()
+
+        # self.main_layout.addWidget(self.scribble_view)
+        # self.main_layout.addWidget(self.text_view)
+
+        self.window.setLayout(self.main_layout)
+        self.setCentralWidget(self.window)
+
+
+    def test_views(self):
+        green_brush = qtg.QBrush(qtc.Qt.green)
+        blue_brush = qtg.QBrush(qtc.Qt.blue)
+
+        pen = qtg.QPen(qtc.Qt.black)
+        pen.setWidth(5)
+
+        ellipse = self.scribble_scene.addEllipse(10, 10, 200, 200, pen, green_brush)
+        rect = self.scribble_scene.addRect(-100, -100, 200, 200, pen, blue_brush)
+
+        text = self.text_scene.addText("Some text")
+
+        self.scribble_view.setGeometry(0, 0, self.width(), self.height())
+        self.text_view.setGeometry(self.scribble_view.x(), self.scribble_view.y(), self.scribble_view.width(), self.scribble_view.height())
+
+        # self.scribble_view.show()
+        # self.text_view.show()
+
+    # --------------------------------------------------------------------------
+    def keyPressEvent(self, event):
         if event.key() == qtc.Qt.Key_Return or event.key() == qtc.Qt.Key_Enter:
             print 'Pressed Enter!'
-            self.current_text = ""
         event.accept()
 
-    def closeEvent(self, event):
-        if self.maybeSave():
-            event.accept()
-        else:
-            event.ignore()
+    def resizeEvent(self, event):
+        self.scribble_view.setGeometry(0, 0, self.width(), self.height())
+        self.text_view.setGeometry(self.scribble_view.x(), self.scribble_view.y(), self.scribble_view.width(), self.scribble_view.height())
 
-    def open(self):
-        if self.maybeSave():
-            fileName,_ = qtw.QFileDialog.getOpenFileName(self, "Open File", qtc.QDir.currentPath())
-            if fileName:
-                self.scribble_widget.openImage(fileName)
+        super(MainWindow, self).resizeEvent(event)
 
-    def save(self):
-        action = self.sender()
-        file_format = action.data()
-        self.saveFile(file_format)
-
-    def penColor(self):
-        newColor = qtw.QColorDialog.getColor(self.scribble_widget.penColor())
-        if newColor.isValid():
-            self.scribble_widget.setPenColor(newColor)
-
-    def penWidth(self):
-        newWidth, ok = qtw.QInputDialog.getInt(self, "Scribble",
-                "Select pen width:", self.scribble_widget.penWidth(), 1, 50, 1)
-        if ok:
-            self.scribble_widget.setPenWidth(newWidth)
-
-    def about(self):
-        qtw.QMessageBox.about(self, "About Scribble",
-                "<p>The <b>Scribble</b> example shows how to use "
-                "QMainWindow as the base widget for an application, and how "
-                "to reimplement some of QWidget's event handlers to receive "
-                "the events generated for the application's widgets:</p>"
-                "<p> We reimplement the mouse event handlers to facilitate "
-                "drawing, the paint event handler to update the application "
-                "and the resize event handler to optimize the application's "
-                "appearance. In addition we reimplement the close event "
-                "handler to intercept the close events before terminating "
-                "the application.</p>"
-                "<p> The example also demonstrates how to use QPainter to "
-                "draw an image in real time, as well as to repaint "
-                "widgets.</p>")
-
-    def createActions(self):
-        self.openAct = qtw.QAction("&Open...", self, shortcut="Ctrl+O",
-                triggered=self.open)
-
-        for format in qtg.QImageWriter.supportedImageFormats():
-            text = str(format.toUpper() + "...")
-
-            action = qtw.QAction(text, self, triggered=self.save)
-            action.setData(format)
-            self.saveAsActs.append(action)
-
-        self.exitAct = qtw.QAction("E&xit", self, shortcut="Ctrl+Q",
-                triggered=self.close)
-
-        self.penColorAct = qtw.QAction("&Pen Color...", self,
-                triggered=self.penColor)
-
-        self.penWidthAct = qtw.QAction("Pen &Width...", self,
-                triggered=self.penWidth)
-
-        self.clearScreenAct = qtw.QAction("&Clear Screen", self,
-                shortcut="Ctrl+L", triggered=self.scribble_widget.clearImage)
-
-        self.aboutAct = qtw.QAction("&About", self, triggered=self.about)
-
-        self.aboutQtAct = qtw.QAction("About &Qt", self,
-                triggered=qtg.qApp.aboutQt)
-
-    def createMenus(self):
-        self.saveAsMenu = qtw.QMenu("&Save As", self)
-        for action in self.saveAsActs:
-            self.saveAsMenu.addAction(action)
-
-        fileMenu = qtw.QMenu("&File", self)
-        fileMenu.addAction(self.openAct)
-        fileMenu.addMenu(self.saveAsMenu)
-        fileMenu.addSeparator()
-        fileMenu.addAction(self.exitAct)
-
-        optionMenu = qtw.QMenu("&Options", self)
-        optionMenu.addAction(self.penColorAct)
-        optionMenu.addAction(self.penWidthAct)
-        optionMenu.addSeparator()
-        optionMenu.addAction(self.clearScreenAct)
-
-        helpMenu = qtw.QMenu("&Help", self)
-        helpMenu.addAction(self.aboutAct)
-        helpMenu.addAction(self.aboutQtAct)
-
-        self.menuBar().addMenu(fileMenu)
-        self.menuBar().addMenu(optionMenu)
-        self.menuBar().addMenu(helpMenu)
-
-    def maybeSave(self):
-        if self.scribble_widget.isModified():
-            ret = qtw.QMessageBox.warning(self, "Scribble",
-                        "The image has been modified.\n"
-                        "Do you want to save your changes?",
-                        qtw.QMessageBox.Save | qtw.QMessageBox.Discard |
-                        qtw.QMessageBox.Cancel)
-            if ret == qtw.QMessageBox.Save:
-                return self.saveFile('png')
-            elif ret == qtw.QMessageBox.Cancel:
-                return False
-
-        return True
-
-    def saveFile(self, file_format):
-        initialPath = qtc.QDir.currentPath() + '/untitled.' + file_format
-
-        file_name,_ = qtw.QFileDialog.getSaveFileName(self, "Save As",
-                initialPath,
-                "%s Files (*.%s);;All Files (*)" % (str(file_format).upper(), file_format))
-
-        if file_name:
-            return self.scribble_widget.save_image(file_name, file_format)
-
-        return False
 
 def main():
     app = qtw.QApplication(sys.argv)
